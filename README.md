@@ -1,8 +1,4 @@
-# Foreman
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/thruwire/foreman/main/docs/assets/foreman-icon.png" alt="Foreman" width="96">
-</p>
+# <img src="https://raw.githubusercontent.com/thruwire/foreman/main/docs/assets/foreman-icon.png" alt="" width="40"> Foreman
 
 Foreman watches the software factory floor with [TypeSafe AI's Jev](https://docs.typesafe.ai/introduction),
 placing a fast decision model above slower coding agents.
