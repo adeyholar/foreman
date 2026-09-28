@@ -1,11 +1,11 @@
 # Agent integrations
 
-Foreman keeps harness-specific adapters with the core project so protocol changes, compatibility
-requirements, and releases can be reviewed together.
+Foreman's assistant-neutral hook protocol lives in the core project. Installable assistant plugin
+packages and publisher catalogs live in
+[`thruwire/marketplace`](https://github.com/thruwire/marketplace), where their manifests and assets
+are available to marketplace discovery before installation.
 
-- [`codex/`](codex/) contains the installable Codex plugin published through the ThruWire
-  marketplace.
+- The [Foreman Codex plugin](https://github.com/thruwire/marketplace/tree/main/plugins/foreman)
+  invokes the core `foreman hook --client codex` protocol.
 - [`claude/`](claude/) reserves the future Claude Code integration location. It is not currently an
   installable plugin.
-
-The publisher catalogs live in [`thruwire/marketplace`](https://github.com/thruwire/marketplace).

@@ -1,8 +1,0 @@
-{
-  "session_id": "fixture-session",
-  "transcript_path": null,
-  "cwd": ".",
-  "hook_event_name": "SessionEnd",
-  "model": "fixture-model",
-  "reason": "other"
-}
