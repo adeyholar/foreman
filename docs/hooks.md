@@ -88,8 +88,10 @@ their validated local snapshots. It does not read target-repository responsibili
 
 Hook processing never authenticates or synchronizes an extension. Those are explicit extension
 lifecycle operations outside the latency-sensitive hook path. See [Extensions](extensions.md).
-Coding-assistant plugin packaging remains separate; this command establishes the process protocol
-that a future plugin can invoke.
+Coding-assistant plugin packaging remains separate from the runtime. The Codex package under
+[`integrations/codex`](../integrations/codex/) invokes this protocol and is published through the
+[ThruWire marketplace](https://github.com/thruwire/marketplace). The placeholder under
+`integrations/claude` reserves the future Claude Code adapter location but is not installable.
 
 Command evidence is likewise assistant-neutral: a Codex or future assistant plugin only forwards
 lifecycle events to `foreman hook`. Foreman owns provider invocation and check-specific evidence,

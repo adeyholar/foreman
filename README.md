@@ -60,6 +60,8 @@ depends on the quality of the configured checks, evidence, thresholds, and under
 - [Coding-assistant hooks and attached workers](docs/hooks.md)
 - [Live steering](docs/steering.md)
 - [Worker backends](docs/workers.md)
+- [Codex plugin](integrations/codex/README.md)
+- [Agent integration layout](integrations/README.md)
 
 ## Contributing
 
@@ -379,8 +381,17 @@ runtime and translates semantic outcomes back into client-specific hook JSON.
 Hook sessions are keyed by client plus its native `session_id` and stored globally under
 `~/.foreman/sessions/`, not in the target repository. Hooks compose built-in definitions with any
 configured extensions from validated local snapshots; they never authenticate or synchronize on
-the hook path. A Codex plugin is not included yet. See
-[coding-assistant hooks and attached workers](docs/hooks.md).
+the hook path. The installable Codex adapter lives in [`integrations/codex`](integrations/codex/)
+and is published as `foreman@thruwire` through the
+[ThruWire marketplace](https://github.com/thruwire/marketplace):
+
+```bash
+codex plugin marketplace add thruwire/marketplace
+codex plugin add foreman@thruwire
+```
+
+See [coding-assistant hooks and attached workers](docs/hooks.md) for the process protocol and the
+[Codex integration README](integrations/codex/README.md) for installation, trust, and diagnostics.
 
 ## Persistence and inspection
 
