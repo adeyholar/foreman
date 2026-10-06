@@ -1,15 +1,20 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import Mapping, Sequence
 from math import isfinite
 from typing import Any
 
 from foreman.evidence import evidence_for
 from foreman.foreman.base import ForemanModelError
+from foreman.jev_usage import JevUsageRecorder
 from foreman.models import ForemanResult
 from foreman.observation import FactoryObservation
+from foreman.request_budget import BudgetedRequest, JevRequestBudget, RequestBudgetError
 from foreman.responsibilities import Check
+
+logger = logging.getLogger(__name__)
 
 
 def normalize_check_results(
@@ -66,10 +71,14 @@ class JevForemanModel:
         client: Any | None = None,
         timeout_seconds: float = 10.0,
         model: str = "jev-latest",
+        budget: JevRequestBudget | None = None,
+        usage_recorder: JevUsageRecorder | None = None,
     ) -> None:
         self._client = client
         self.timeout_seconds = timeout_seconds
         self.model = model
+        self.budget = budget or JevRequestBudget()
+        self.usage_recorder = usage_recorder or JevUsageRecorder()
         self._owns_client = client is None
 
     def _make_client(self) -> Any:
@@ -113,28 +122,44 @@ class JevForemanModel:
         for check in checks:
             groups.setdefault(evidence_for(check), []).append(check)
 
-        async def assess_group(
-            providers: tuple[str, ...], group: Sequence[Check]
-        ) -> ForemanResult:
+        plans = []
+        try:
+            for providers, group in groups.items():
+                fitted = self.budget.fit(
+                    observation.state_for(providers),
+                    {check.key: check.instructions for check in group},
+                )
+                if "evidence_budget" in fitted.state:
+                    logger.info(
+                        "Compacted Jev evidence: %s", fitted.measurements,
+                    )
+                plans.append((fitted, group))
+        except RequestBudgetError as error:
+            raise ForemanModelError(str(error)) from error
+
+        async def assess_group(request: BudgetedRequest, group: Sequence[Check]) -> ForemanResult:
             questions = {
                 check.key: Noul(instructions=check.instructions) for check in group
             }
             response = await asyncio.wait_for(
                 client.system_one(
-                    state=observation.state_for(providers),
+                    state=request.state,
                     questions=questions,
                     model=self.model,
                     timeout=self.timeout_seconds,
                 ),
                 timeout=self.timeout_seconds + 0.5,
             )
+            self.usage_recorder.record(
+                response, request, purpose="assessment", model=self.model,
+            )
             return parse_jev_response(response, group)
 
         try:
             results = await asyncio.gather(
                 *(
-                    assess_group(providers, group)
-                    for providers, group in groups.items()
+                    assess_group(request, group)
+                    for request, group in plans
                 )
             )
             merged: dict[str, dict[str, float]] = {}

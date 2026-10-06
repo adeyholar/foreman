@@ -31,10 +31,12 @@ from foreman.hooks import (
     HookEvent,
     run_hook,
 )
+from foreman.jev_usage import JevUsageRecorder
 from foreman.models import EventType, FactoryStatus, WorkerType
 from foreman.paths import foreman_config_path, foreman_data_dir
 from foreman.persistence import PersistenceError, RunStore
 from foreman.repository_scope import repository_in_scope
+from foreman.request_budget import JevRequestBudget
 from foreman.responsibilities import (
     ResponsibilityConfigError,
     configured_registry,
@@ -266,9 +268,23 @@ def hook(
             asyncio.run(extensions.close())
             sys.stdout.write("{}\n")
             return
+        budget = JevRequestBudget(
+            config.jev_pair_budget_bytes, config.jev_request_budget_bytes,
+            target_pair_bytes=config.jev_pair_target_bytes,
+            target_total_bytes=config.jev_request_target_bytes,
+        )
+        usage_recorder = JevUsageRecorder(central_data_dir / "jev-usage.jsonl")
         runtime = AttachedWorkerRuntime(
-            model=JevForemanModel(timeout_seconds=config.jev_timeout_seconds),
-            router=JevResponsibilityRouter(timeout_seconds=config.jev_timeout_seconds),
+            model=JevForemanModel(
+                timeout_seconds=config.jev_timeout_seconds,
+                budget=budget,
+                usage_recorder=usage_recorder,
+            ),
+            router=JevResponsibilityRouter(
+                timeout_seconds=config.jev_timeout_seconds,
+                budget=budget,
+                usage_recorder=usage_recorder,
+            ),
             responsibilities=responsibilities,
             config=config,
             store=AttachedSessionStore(
@@ -378,14 +394,28 @@ def run(
                 item.implementation.id: item.definition for item in registrations
             },
         )
+        budget = JevRequestBudget(
+            config.jev_pair_budget_bytes, config.jev_request_budget_bytes,
+            target_pair_bytes=config.jev_pair_target_bytes,
+            target_total_bytes=config.jev_request_target_bytes,
+        )
+        usage_recorder = JevUsageRecorder(extensions.data_dir / "jev-usage.jsonl")
         runtime = FactoryRuntime(
             repository=repo,
             job=job,
-            model=JevForemanModel(timeout_seconds=config.jev_timeout_seconds),
+            model=JevForemanModel(
+                timeout_seconds=config.jev_timeout_seconds,
+                budget=budget,
+                usage_recorder=usage_recorder,
+            ),
             config=config,
             event_sink=TerminalRenderer(console),
             responsibilities=responsibilities,
-            router=JevResponsibilityRouter(timeout_seconds=config.jev_timeout_seconds),
+            router=JevResponsibilityRouter(
+                timeout_seconds=config.jev_timeout_seconds,
+                budget=budget,
+                usage_recorder=usage_recorder,
+            ),
             routing_groups=activated.routing_groups,
             active_extension_ids=activated.extension_ids,
             extension_snapshot_revisions=dict(activated.snapshot_revisions),

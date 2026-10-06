@@ -75,6 +75,11 @@ are atomically replaced with owner-only permissions where the operating system s
 per-session lock serializes concurrent hook processes. Stored event, result, intervention, error,
 diff, and output history remains bounded by `FactoryConfig` limits.
 
+Before each Jev request, Foreman also applies an aggregate [request budget](evidence.md#jev-request-budgets).
+An existing session with oversized retained history can therefore recover without deleting its
+record. The current tool operation is supplied separately from shortened historical summaries,
+so compaction cannot conceal the arguments being assessed.
+
 Sessions expire after seven days of inactivity by default. Set
 `FOREMAN_HOOK_SESSION_TTL_SECONDS` to change that lifetime, or pass `--data-dir` to isolate the
 state directory during development and testing.
@@ -107,6 +112,7 @@ failure_message = "Read the connected project's current context before proceedin
 [hooks.responsibilities."example.project-context".checks.context_consulted]
 instructions = "Was the connected project consulted for this work?"
 min_threshold = 0.75
+evidence = ["events", "history", "git.status"]
 ```
 
 The repository list matches Git identities, including subdirectories, symlinks, and linked
