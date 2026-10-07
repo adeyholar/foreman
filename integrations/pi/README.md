@@ -6,13 +6,48 @@ request budgets, and attached-session storage. The bridge never makes a model ca
 
 Tested against `@earendil-works/pi-coding-agent` and
 `@earendil-works/pi-durable` **1.0.4**, with Node **22.19+**. Pi Durable's API is
-experimental; the peer range is limited to 1.0.x. This integration is a local
-package in the repository, not a published npm package. The former
-`@mariozechner` packages are not part of this tested contract.
+experimental; the peer range is limited to 1.0.x. The former `@mariozechner`
+packages are not part of this tested contract.
 
-## Build and configure
+## Installation
 
-Until this PR is released, install the Foreman core from this checkout:
+Pi supervision requires **both** the Python `foreman-core` package and this
+TypeScript bridge. Installing `foreman-core` alone does not load an extension
+into Pi. The bridge invokes the `foreman` executable; it does not bundle Python
+or install the core automatically.
+
+The first npm release requires `foreman-core` **0.4.4 or newer**. Version 0.4.3
+predates the Pi adapters. Until 0.4.4 is published to PyPI, use the source
+installation below for the core as well as the bridge.
+
+After the core release is published, install it with:
+
+```bash
+pipx install 'foreman-core>=0.4.4'
+```
+
+### npm installation
+
+Once `@thruwire/foreman-pi` has been published to npm, install it into Pi with:
+
+```bash
+pi install npm:@thruwire/foreman-pi
+```
+
+For a Pi Durable application, install the bridge and its supported host packages:
+
+```bash
+npm install @thruwire/foreman-pi @earendil-works/pi-durable@1.0.4 @earendil-works/chord@1.0.4
+```
+
+Import `createForemanDurable` from `@thruwire/foreman-pi/durable` and install it
+in the host's registry as shown below. The host must support Node subprocesses
+and have `foreman` on `PATH`; this bridge does not run inside a Cloudflare Worker.
+
+### Build from source
+
+Source installation is available without an npm release. From a cloned Foreman
+checkout, install the core and build the bridge:
 
 ```bash
 python3 -m pip install -e /absolute/path/to/foreman
@@ -23,12 +58,14 @@ npm run build
 
 Put `TYPESAFE_API_KEY` in the environment or `~/.foreman/.env`. Existing Foreman
 responsibilities, repository scope, extensions, and request budgets apply to both
-clients; see [the hook guide](../../docs/hooks.md). The default bridge command is
+clients; see [the hook guide](https://github.com/thruwire/foreman/blob/main/docs/hooks.md).
+The default bridge command is
 `foreman hook --client pi` or `foreman hook --client pi-durable`, found on `PATH`.
 
 ## Pi coding agent
 
-Load the built extension:
+`pi install` registers the npm extension persistently. For a source build,
+load the built extension:
 
 ```bash
 pi -e /absolute/path/to/foreman/integrations/pi/dist/pi.js
@@ -67,7 +104,7 @@ Install the extension in the host's registry before opening the harness:
 
 ```js
 import { createRegistry, Harness } from '@earendil-works/pi-durable';
-import { createForemanDurable } from '/absolute/path/to/foreman/integrations/pi/dist/durable.js';
+import { createForemanDurable } from '@thruwire/foreman-pi/durable';
 
 let harness;
 const registry = createRegistry();
@@ -79,6 +116,9 @@ registry.install(createForemanDurable({
 }));
 harness = await Harness.open(storage, { models, registry }, context);
 ```
+
+For a source build, replace the bridge import with the absolute path to
+`integrations/pi/dist/durable.js` in your checkout.
 
 `storage`, `models`, and `context` are the host's normal durable setup. The lazy
 `harness` accessor resolves after opening, before any work starts. `sessionId`

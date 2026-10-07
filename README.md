@@ -294,6 +294,10 @@ python -m pip install foreman-core
 The distribution is named `foreman-core`; it installs the `foreman` command and the `foreman`
 Python package.
 
+Pi and Pi Durable supervision also requires the separate TypeScript bridge.
+Follow the [Pi installation guide](integrations/pi/README.md); installing `foreman-core`
+alone does not register an extension with Pi.
+
 For development, install from a fresh checkout:
 
 ```bash
@@ -396,8 +400,9 @@ installation, trust, and diagnostics.
 
 The [Pi and Pi Durable bridges](integrations/pi/README.md) forward native extension events and
 task hooks to the same runtime. They include prompt routing, tool supervision, completion
-continuations, and a Durable replay contract. Build and load them from this checkout; the bridge
-package has not been published to npm.
+continuations, and a Durable replay contract. Pi supervision requires both `foreman-core` and the
+separate TypeScript bridge; installing the Python core alone does not load the Pi extension.
+See the bridge guide for npm installation after publication and building from source today.
 
 ## Persistence and inspection
 

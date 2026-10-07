@@ -9,6 +9,8 @@ are available to marketplace discovery before installation.
   invokes the core `foreman hook --client codex` protocol.
 - [`pi/`](pi/) supplies buildable Pi extension and Pi Durable task-hook bridges, invoking
   `foreman hook --client pi` and `foreman hook --client pi-durable` respectively. This is a local
-  integration package with installation documentation and offline tests, not an npm release.
+  integration package with installation documentation and offline tests. Pi supervision requires
+  the TypeScript bridge in addition to `foreman-core`; the guide covers source installation and
+  npm installation once the package is published.
 - [`claude/`](claude/) reserves the future Claude Code integration location. It is not currently an
   installable plugin.

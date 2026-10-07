@@ -1,9 +1,30 @@
 {
   "name": "@thruwire/foreman-pi",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "description": "Pi and Pi Durable bridges to Foreman's attached-worker supervisor",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thruwire/foreman.git",
+    "directory": "integrations/pi"
+  },
+  "homepage": "https://github.com/thruwire/foreman/tree/main/integrations/pi",
+  "bugs": {
+    "url": "https://github.com/thruwire/foreman/issues"
+  },
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "pi-durable",
+    "foreman",
+    "supervision",
+    "jev"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "exports": {
     "./pi": "./dist/pi.js",
     "./durable": "./dist/durable.js"
@@ -22,13 +43,18 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build",
     "test": "npm run build && node --test tests/*.test.mjs"
   },
   "peerDependencies": {
+    "@earendil-works/chord": ">=1.0.4 <1.1.0",
     "@earendil-works/pi-coding-agent": ">=1.0.4 <1.1.0",
     "@earendil-works/pi-durable": ">=1.0.4 <1.1.0"
   },
   "peerDependenciesMeta": {
+    "@earendil-works/chord": {
+      "optional": true
+    },
     "@earendil-works/pi-coding-agent": {
       "optional": true
     },
